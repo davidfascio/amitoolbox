@@ -4,6 +4,8 @@ class SerialCommands:
     
     DEFAULT_SERIAL_COMMANDS = {'--sync'     : '504eb4701d85',
                                '--version'  : '40',
+                               '--status'   : '90',
+                               '--mensure'  : '1036333830323030303030303030303030',
                                '--turnon'   : '1236333830323030303030303030303030',
                                '--turnoff'  : '1136333830323030303030303030303030' }
     

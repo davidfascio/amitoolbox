@@ -67,7 +67,7 @@ class SerialCommunication:
             print 'Command to send: ',
             
             print '[ ',            
-            for k in data:
+            for k in data.decode('hex'):
                 print hex(ord(k)),
         
             print ' ]'
