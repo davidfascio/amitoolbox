@@ -1,10 +1,11 @@
 import sys
 import time
 import serial
-
 #from TCP_Socket import TCP_Socket
 from Log_File import Log_File
 from SerialCommands import SerialCommands
+from SerialCommunication import SerialCommunication
+
 #from TestingNetwork import TestingNetwork
 #from MeterEnergyHighLevel import MeterEnergyHighLevel
 #from TCP_Commands import TCP_Commands
@@ -38,26 +39,24 @@ class TestingShell:
     def shellCommandProcess(self, dict):
         
         error_code = 0
-        timer_seconds_delay = 10
-                        
-        # Testing mode
-                        
+        timer_seconds_delay = 10                                     
         # Connection
         self.port = dict.get('-port')
         self.baud = dict.get('-b')
         
-        
-        
-        
-        if dict.get('-mode') == 'command':
-            
+        if dict.get('-mode') == 'command':    
                     
             command = dict.get('-command')
-                        
+            
+            serial_communication = SerialCommunication(self.port, self.baud)
+            
             if command:
-                
+                                
+                serial_connection = serial_communication.createConnection()                
                 serialCommand = SerialCommands().buildSerialCommand(command)
-                self.sendCommandSerial(serialCommand.decode('hex'), command)
+                serial_communication.sendSerialData(serial_connection, serialCommand)  
+                   
+                serial_communication.receiveSerialData(serial_connection)          #self.sendCommandSerial(serialCommand, command)
                 
                 error_code = 1
                     

@@ -1,6 +1,7 @@
 import serial
 import sys
-from _curses import ERR
+from SerialCommands import SerialCommands
+
 
 class SerialCommunication:
     
@@ -48,7 +49,7 @@ class SerialCommunication:
             serial_connection = None
                     
         finally:            
-            return serial_connection, error_msg
+            return serial_connection
     
     
     def sendSerialData(self, serial_connection, data):
@@ -66,19 +67,77 @@ class SerialCommunication:
             print 'Command to send: ',
             
             print '[ ',            
-            for k in command:
+            for k in data:
                 print hex(ord(k)),
         
             print ' ]'
             
             serial_connection.write(data.decode('hex'))
-            
-            
-                    
         
+        except serial.SerialException, msg:
+            
+            error_msg = "Send command to device error. Connection status: " + msg[1]
+            print >> sys.stderr, error_msg
+            error_code = self.SERIAL_COMMUNICATION_COULD_NOT_SEND_DATA
+            serial_connection.close()
+        
+        finally:
+            return error_code, error_msg
+            
+            
+    
+    def receiveSerialData(self, serial_connection):
+        
+        error_code = self.SERIAL_COMMUNICATION_OPEN_CONNECTION_OK
+        error_msg = ''
+        data = ''
+                        
+        if serial_connection is None:
+            error_msg = 'sendSerialData Error: Could not open serial connection'
+            print error_msg
+            error_code = self.SERIAL_COMMUNICATION_COULD_NOT_OPEN_CONNECTION
+            return error_code, error_msg
+        
+        
+        
+        try:
+            while True:            
+                data += serial_connection.read(serial_connection.inWaiting())
+                
+                if SerialCommands.DEFAULT_SERIAL_EOT.decode('hex') in data:
+                    break 
+            
+            #print "Data Received: ", data
+            
+            if not data:
+                error_msg = "Device didnt answer. Connection status: Device connection is down"
+                print >> sys.stderr, error_msg
+                error_code = self.SERIAL_COMMUNICATION_DEVICE_DID_NOT_ANSWER                
+            else:
+                print 'Data reading: ',
+                print '[ ',            
+                
+                for k in data:
+                    print hex(ord(k)),
+        
+                print ' ]'
+                
+                
+        except Exception, msg:
+            
+            error_msg = "Device didnt answer. Connection status: " + str(msg)
+            print >> sys.stderr, error_msg
+            error_code = self.SERIAL_COMMUNICATION_DEVICE_DID_NOT_ANSWER        
+        
+        
+        
+            
+        finally:        
+            serial_connection.close()
+            return error_code, error_msg, data
     
     
-    
+        
     
     
     
