@@ -106,7 +106,7 @@ class TestingShell:
                 answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
                                                               ProtocolCommandsEnum.PROTOCOL_COMMANDS_READMODE_STATUS_LOCAL.get_command(),
                                                               ProtocolCommandsEnum.PROTOCOL_COMMANDS_REPLY_READMODE_STATUS_LOCAL_IDLE_STATE.get_command(),
-                                                              50)
+                                                              5)
                 if (answered):      
                     serial_communication.sendSerialData(serial_connection, prot_comm.get_command())                     
                     serial_communication.receiveSerialData(serial_connection)          #self.sendCommandSerial(serialCommand, command)
