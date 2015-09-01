@@ -1,6 +1,8 @@
 import serial
 import sys
 from SerialCommands import SerialCommands
+import time
+from ProtocolCommands import *
 
 
 class SerialCommunication:
@@ -133,10 +135,42 @@ class SerialCommunication:
         
             
         finally:        
-            serial_connection.close()
-            return error_code, error_msg, data
+            #serial_connection.close()
+            return data
     
-    
+    def sendSerialDataWaitAnswer(self, serial_connection, data_to_send, data_expected, retries):
+        
+        retry = 0
+        answered = False
+        
+        while (True):
+            self.sendSerialData(serial_connection, data_to_send)
+            data_received = self.receiveSerialData(serial_connection)   
+            retry += 1        
+            
+            #print "Data received: ", data_received
+            #print "Data expected: ", data_expected.decode('hex')
+            
+            #if (data_expected == ProtocolCommandsEnum.PROTOCOL_COMMANDS_NONE_CUSTOM_REPLY.get_command()):
+            #    answered = True
+            #    break
+            time.sleep(1)
+            
+            if (data_expected.decode('hex') == data_received):
+                answered = True
+                break
+                
+                
+            if(retries <= retry):
+                break
+            
+            
+                       
+        
+        return answered
+                
+            
+                                                              
         
     
     

@@ -5,6 +5,9 @@ import serial
 from Log_File import Log_File
 from SerialCommands import SerialCommands
 from SerialCommunication import SerialCommunication
+from ProtocolCommands import *
+from FunctionalCommandsTest import FunctionalCommandsTest
+
 
 #from TestingNetwork import TestingNetwork
 #from MeterEnergyHighLevel import MeterEnergyHighLevel
@@ -82,8 +85,111 @@ class TestingShell:
                 #else:
                 #    tcpCommand = TCP_Commands().buildTCPCommand(command)
                     
-                #tcp_socket.sendCommandSocket(tcpCommand, command)   
+                #tcp_socket.sendCommandSocket(tcpCommand, command)  
+        
+        elif dict.get('-mode') == 'getcommand':      
+            
+            command = dict.get('-command')
+            
+            serial_communication = SerialCommunication(self.port, self.baud)
+            
+            if command:
                 
+                for prot_comm in ProtocolCommandsEnum : 
+                    if(prot_comm.get_command_name() == command):
+                        break 
+                
+                                
+                serial_connection = serial_communication.createConnection()                
+                #serialCommand = SerialCommands().buildSerialCommand(command)
+                
+                answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
+                                                              ProtocolCommandsEnum.PROTOCOL_COMMANDS_READMODE_STATUS_LOCAL.get_command(),
+                                                              ProtocolCommandsEnum.PROTOCOL_COMMANDS_REPLY_READMODE_STATUS_LOCAL_IDLE_STATE.get_command(),
+                                                              50)
+                if (answered):      
+                    serial_communication.sendSerialData(serial_connection, prot_comm.get_command())                     
+                    serial_communication.receiveSerialData(serial_connection)          #self.sendCommandSerial(serialCommand, command)
+                
+                error_code = 1                    
+            
+        elif dict.get('-mode') == 'gettestcase':      
+            
+            testcase = dict.get('-testcase')
+            
+            serial_communication = SerialCommunication(self.port, self.baud)
+            
+            if testcase == '--connection_mtr':
+                                
+                serial_connection = serial_communication.createConnection()                
+                #serialCommand = SerialCommands().buildSerialCommand(command)
+                
+                #while True:
+                
+                for fct in FunctionalCommandsTest.FUNCTIONAL_COMMANDS_SEQUENCE_TURN_ON_RELAY_PROCESS:
+                    
+                    answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
+                                                              fct[0].get_command(),
+                                                              fct[1].get_command(),
+                                                              10)
+                    if not answered:
+                        print "ERROR"
+                        return 2
+                
+                error_code = 1
+            
+            elif testcase == '--disconnection_mtr':
+                                
+                serial_connection = serial_communication.createConnection()                
+                #serialCommand = SerialCommands().buildSerialCommand(command)
+                
+                #while True:
+                
+                for fct in FunctionalCommandsTest.FUNCTIONAL_COMMANDS_SEQUENCE_TURN_OFF_RELAY_PROCESS:
+                    
+                    answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
+                                                              fct[0].get_command(),
+                                                              fct[1].get_command(),
+                                                              10)
+                    if not answered:
+                        print "ERROR"
+                        return 2
+                
+                error_code = 1
+                
+            elif testcase == '--connection_disconnection_mtr':
+                                
+                serial_connection = serial_communication.createConnection()                
+                #serialCommand = SerialCommands().buildSerialCommand(command)
+                
+                while True:
+                
+                    for fct in FunctionalCommandsTest.FUNCTIONAL_COMMANDS_SEQUENCE_TURN_ON_RELAY_PROCESS:
+                        
+                        answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
+                                                                  fct[0].get_command(),
+                                                                  fct[1].get_command(),
+                                                                  10)
+                        if not answered:
+                            print "ERROR"
+                            return 2
+                              
+                    #time.sleep(5)
+                    
+                    for fct in FunctionalCommandsTest.FUNCTIONAL_COMMANDS_SEQUENCE_TURN_OFF_RELAY_PROCESS:
+                        
+                        answered = serial_communication.sendSerialDataWaitAnswer(serial_connection, 
+                                                                  fct[0].get_command(),
+                                                                  fct[1].get_command(),
+                                                                  10)
+                        
+                        if not answered:
+                            print "ERROR"
+                            return 2
+                    
+                    #time.sleep(5)        
+                
+                error_code = 1                 
         else:
             self.help(self.TESTING_SHELL_TCP_HELP_INDEX)
             error_code = 1
